@@ -20,9 +20,10 @@ def test_list_gists_default_user():
         assert "id" in item
         assert "html_url" in item
         assert "files" in item
+        assert "owner" in item
         assert isinstance(item["files"], list)
 
 def test_list_gists_explicit_user_octocat():
-    r = client.get("/", params={"user": "octocat"})
+    r = client.get("/", params={"users": "octocat"})
     assert r.status_code == 200
     assert isinstance(r.json(), list)
