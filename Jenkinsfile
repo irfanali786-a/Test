@@ -8,25 +8,25 @@ pipeline {
 
         stage('Setup Python') {
             steps {
-                bat 'python -m venv venv'
-                bat 'call venv\\Scripts\\activate.bat && pip install -r requirements.txt'
+                bat 'cd gist-api && python -m venv venv'
+                bat 'cd gist-api && call venv\\Scripts\\activate.bat && pip install -r requirements.txt'
             }
         }
 
         stage('Run Tests') {
-            steps { bat 'call venv\\Scripts\\activate.bat && pytest -q' }
+            steps { bat 'cd gist-api && call venv\\Scripts\\activate.bat && pytest -q' }
         }
 
         stage('Static Analysis') {
-            steps { bat 'call venv\\Scripts\\activate.bat && pip install bandit && bandit -r app' }
+            steps { bat 'cd gist-api && call venv\\Scripts\\activate.bat && pip install bandit && bandit -r app' }
         }
 
         stage('Dependency Scan') {
-            steps { bat 'call venv\\Scripts\\activate.bat && pip install pip-audit && pip-audit' }
+            steps { bat 'cd gist-api && call venv\\Scripts\\activate.bat && pip install pip-audit && pip-audit' }
         }
 
         stage('Build Docker Image') {
-            steps { bat 'docker build -t gist-api:latest .' }
+            steps { bat 'cd gist-api && docker build -t gist-api:latest .' }
         }
 
         stage('Docker Scan') {
@@ -36,10 +36,12 @@ pipeline {
         stage('Smoke Test') {
             steps {
                 bat '''
+                docker stop gist-api >nul 2>&1 || true
+                docker rm gist-api >nul 2>&1 || true
                 docker run -d -p 8080:8080 --name gist-api gist-api:latest
-                timeout /t 5
-                curl --fail http://localhost:8080/health
-                docker rm -f gist-api
+                timeout /t 5 /nobreak
+                powershell -Command "try { $response = Invoke-WebRequest http://localhost:8080/health -ErrorAction Stop; if($response.StatusCode -ne 200) { exit 1 } } catch { exit 1 }"
+                docker rm -f gist-api >nul 2>&1
                 '''
             }
         }
