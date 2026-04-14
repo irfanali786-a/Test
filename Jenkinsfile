@@ -8,7 +8,7 @@ pipeline {
 
         stage('Setup Python') {
             steps {
-                bat 'python3.12 -m venv venv'
+                bat 'python -m venv venv'
                 bat 'call venv\\Scripts\\activate.bat && pip install -r requirements.txt'
             }
         }
