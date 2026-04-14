@@ -8,36 +8,36 @@ pipeline {
 
         stage('Setup Python') {
             steps {
-                sh 'python3.12 -m venv venv'
-                sh '. venv/bin/activate && pip install -r requirements.txt'
+                bat 'python3.12 -m venv venv'
+                bat 'call venv\\Scripts\\activate.bat && pip install -r requirements.txt'
             }
         }
 
         stage('Run Tests') {
-            steps { sh '. venv/bin/activate && pytest -q' }
+            steps { bat 'call venv\\Scripts\\activate.bat && pytest -q' }
         }
 
         stage('Static Analysis') {
-            steps { sh '. venv/bin/activate && pip install bandit && bandit -r app' }
+            steps { bat 'call venv\\Scripts\\activate.bat && pip install bandit && bandit -r app' }
         }
 
         stage('Dependency Scan') {
-            steps { sh '. venv/bin/activate && pip install pip-audit && pip-audit' }
+            steps { bat 'call venv\\Scripts\\activate.bat && pip install pip-audit && pip-audit' }
         }
 
         stage('Build Docker Image') {
-            steps { sh 'docker build -t gist-api:latest .' }
+            steps { bat 'docker build -t gist-api:latest .' }
         }
 
         stage('Docker Scan') {
-            steps { sh 'docker run --rm aquasec/trivy image gist-api:latest' }
+            steps { bat 'docker run --rm aquasec/trivy image gist-api:latest' }
         }
 
         stage('Smoke Test') {
             steps {
-                sh '''
+                bat '''
                 docker run -d -p 8080:8080 --name gist-api gist-api:latest
-                sleep 5
+                timeout /t 5
                 curl --fail http://localhost:8080/health
                 docker rm -f gist-api
                 '''
