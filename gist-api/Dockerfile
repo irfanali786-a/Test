@@ -1,5 +1,5 @@
 # Dockerfile
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 # Create a non-root user and group
 ARG APP_USER=appuser
