@@ -44,7 +44,7 @@ pipeline {
                 docker run -d -p 8080:8080 --name gist-api gist-api:latest
                 timeout /t 5 /nobreak
                 powershell -Command "try { $response = Invoke-WebRequest http://localhost:8080/health -ErrorAction Stop; if($response.StatusCode -ne 200) { exit 1 } } catch { exit 1 }"
-                docker rm -f gist-api >nul 2>&1
+                echo "Container is running and healthy!"
                 '''
             }
         }
