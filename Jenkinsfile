@@ -30,7 +30,10 @@ pipeline {
         }
 
         stage('Docker Scan') {
-            steps { bat 'docker run --rm aquasec/trivy image gist-api:latest' }
+            steps {
+                bat 'cd gist-api && docker save gist-api:latest -o gist-api.tar'
+                bat 'docker run --rm -v %cd%\\gist-api:/tmp aquasec/trivy:0.55.0 image --input /tmp/gist-api.tar'
+            }
         }
 
         stage('Smoke Test') {
